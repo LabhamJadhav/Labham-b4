@@ -8,7 +8,7 @@ resource "aws_instance" "my-instance1" {
 }
 
  ---------
-
+ 
 provider "aws" {
     region = "ap-south-1"
 
@@ -53,5 +53,4 @@ resource "aws_instance" "my_ec2" {
 }
 
 
------------
-
+------
