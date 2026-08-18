@@ -7,18 +7,6 @@ resource "aws_instance" "my-instance1" {
     security_groups = ["sg-08bfefd91af5b73d1", "sg-0b38b698bbfdaf548"]
 }
 
- ---------
- 
-provider "aws" {
-    region = "ap-south-1"
-
-}
-resource "aws_instance" "my-inst2" {
-    ami = "ami-01a00762f46d584a1"
-    instance_type = "t3.micro"
-    security_groups = ["sg-044c77041f14f0e45"]
-}
-
 
 ------------
 

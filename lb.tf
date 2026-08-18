@@ -1,45 +1,54 @@
-resource "aws_lb_target_group" "tg-home" {
+resource "aws_lb_target_group" "tg_home" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
+
+  health_check {
+    path = "/"
+  }
+
   tags = {
     Name = "${var.project}-TG-Home"
   }
 }
 
-resource "aws_lb_target_group" "tg-mobile" {
+resource "aws_lb_target_group" "tg_mobile" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
+
+  health_check {
+    path = "/mobile/index.html"
+  }
+
   tags = {
     Name = "${var.project}-TG-Mobile"
   }
-
-  health_check {
-    path = "/mobile"
-  }
 }
 
-resource "aws_lb_target_group" "tg-cloth" {
+resource "aws_lb_target_group" "tg_cloth" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
+
+  health_check {
+    path = "/cloth/index.html"
+  }
+
   tags = {
     Name = "${var.project}-TG-Cloth"
   }
+}
 
-  health_check {
-    path = "/cloth"
-  }
-  }
-
-
-resource "aws_lb" "my-alb" {
+resource "aws_lb" "my_alb" {
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.ALB-sg.id]
-  subnets            = var.subnets
 
+  security_groups = [
+    aws_security_group.alb_sg.id
+  ]
+
+  subnets = var.subnets
 
   tags = {
     Name = "${var.project}-ALB"
@@ -47,24 +56,24 @@ resource "aws_lb" "my-alb" {
   }
 }
 
-resource "aws_lb_listener" "alb-listenr" {
-  load_balancer_arn = aws_lb.my-alb.arn
-  port              = "80"
+resource "aws_lb_listener" "alb_listener" {
+  load_balancer_arn = aws_lb.my_alb.arn
+  port              = 80
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.tg-home.arn
+    target_group_arn = aws_lb_target_group.tg_home.arn
   }
 }
 
-resource "aws_lb_listener_rule" "rule-mobile" {
-  listener_arn = aws_lb_listener.alb-listenr.arn
+resource "aws_lb_listener_rule" "rule_mobile" {
+  listener_arn = aws_lb_listener.alb_listener.arn
   priority     = 101
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.tg-mobile.arn
+    target_group_arn = aws_lb_target_group.tg_mobile.arn
   }
 
   condition {
@@ -72,38 +81,20 @@ resource "aws_lb_listener_rule" "rule-mobile" {
       values = ["/mobile/*"]
     }
   }
-
 }
 
-resource "aws_lb_listener_rule" "rule-cloth" {
-  listener_arn = aws_lb_listener.alb-listenr.arn
+resource "aws_lb_listener_rule" "rule_cloth" {
+  listener_arn = aws_lb_listener.alb_listener.arn
   priority     = 102
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.tg-cloth.arn
+    target_group_arn = aws_lb_target_group.tg_cloth.arn
   }
 
   condition {
     path_pattern {
       values = ["/cloth/*"]
     }
-  }
-
-}
-
-resource "aws_security_group" "ALB-sg" {
-  vpc_id = var.vpc_id
-  ingress {
-    protocol    = "TCP"
-    from_port   = 80
-    to_port     = 80
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
   }
 }
